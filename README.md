@@ -1,12 +1,9 @@
-# Bond
+Bond [![CircleCI Status](https://circleci.com/gh/circleci/bond.png?style=badge)](https://circleci.com/gh/circleci/bond)
 
-[![CircleCI Status](https://circleci.com/gh/mourjo/bond.png?style=badge)](https://circleci.com/gh/mourjo/bond)
-
-Bond is a spying and stubbing library, primarily intended for tests. This is a forked version from https://github.com/circleci/bond/ with support for
-per-thread stubbing and spying. The project version of this is "circle-ci-bond-base.forked-version". Based off of: https://github.com/circleci/bond/pull/47
+Bond is a spying and stubbing library, primarily intended for tests. This is a forked version from https://github.com/circleci/bond/ with support for per-thread stubbing and spying. The project version of this is "circle-ci-bond-base.forked-version". Based off of: https://github.com/circleci/bond/pull/47
 
 ```clojure
-[helpshift/bond "0.4.0.0.1.0"]
+[helpshift/bond "0.6.0.0.1.0"]
 ```
 
 # Usage
@@ -53,6 +50,7 @@ Bond provides two main macros, `with-spy` and `with-local-spy`. It takes a vecto
 Bond also provides `with-stub!` and `with-local-stub!`. It works the same as `with-spy`, but redefines the function to return `(constantly nil)` (default), while also spying on it. This is generally preferable to Clojure's built-in `with-redefs` macro since it will throw an exception if the mocked function is called with the wrong number of arguments. You can specify an arbitrary function instead of the default `(constantly nil)` by providing a `[fn-var replacement-fn]` vector in place of just the fn name:
 
 ```clojure
+
 (ns test.foo
   (:require [bond.james :as bond :refer [with-stub!]]))
 
@@ -71,7 +69,6 @@ Bond also provides `with-stub!` and `with-local-stub!`. It works the same as `wi
                      (fn [x] "foo3")]]
                [bar (fn [y] "bar")]]
     (is (= ["foo1" "foo2" "foo3" "bar"] [(foo 1) (foo 1) (foo 1) (bar 2)]))))
-
 
 (deftest foo-is-called-from-multiple-futures
   (let [futures [(future
@@ -97,12 +94,15 @@ Bond also provides `with-stub!` and `with-local-stub!`. It works the same as `wi
 Private functions can also be stubbed or spyed:
 
 ``` clojure
+
 (ns test.foo)
 
 (defn- foo [x] ...)
+
 ```
 
 ``` clojure
+
 (ns test.bar
   (:require [bond.james :as bond :refer [with-stub!]]
             [test.foo :as foo]))
@@ -111,6 +111,7 @@ Private functions can also be stubbed or spyed:
   (with-local-stub! [[foo/foo (fn [x] "foo")]]
     (is (= "foo" (#'foo/foo 1)))
     (is (= [1] (-> #'foo/foo bond/local-calls first :args)))))
+
 ```
 
 There is also a `with-stub` and `with-local-stub` macro which works like `with-stub!` and `with-local-stub!` but omits the argument check.
@@ -119,6 +120,7 @@ In addition to `with-spy*` and `with-stub*`, Bond also provides `with-spy-ns`/`w
 and `with-stub-ns` which can spy/stub every function in a namespace in one go:
 
 ```clojure
+
 (ns test.foo
   (:require [bond.james :as bond]
             [clojure.test :refer (deftest is)]))
@@ -133,6 +135,7 @@ and `with-stub-ns` which can spy/stub every function in a namespace in one go:
   (bond/with-stub-ns [[foo (constantly :baz)]]
     (is (= :baz (foo)))
     (is (= :baz (bar)))))
+
 ```
 
 There is an utility `with-dynamic-redefs` which can be used in place of `with-redefs` but the redefinition will only be seen by the current (Clojure) thread. This
@@ -140,12 +143,21 @@ can be used aside from the rest of the bond library as well.
 
 # Notes
 
-- The local* functions only work on Clojure and not (yet) on Clojurescript.
 - The local* functions work with Clojure's `binding` conveyance, so if the body of the redefinition goes beyond Clojure threads, like
 say, a java.lang.Thread, then the binding conveyance will not work and the redefined definition will not be seen by the thread nor
 will the counts to those functions from that thread be correct.
-- The local* functions only support redefinition/spying of functions for now. As a future todo, we plan to add support for vars along with functions.
+- `with-dynamic-redefs` only support redefinition of functions for now. As a future todo, we plan to add support for vars along with functions.
 
-# License
+Releasing
+---------
+
+The following should be updated on the `main` branch before tagging:
+
+- `project.clj` - version
+- `README.md` - dependency coordinates
+- `CHANGELOG.md` - summary of changes
+
+License
+-------
 
 Distributed under the [Eclipse Public License](http://www.eclipse.org/legal/epl-v10.html).

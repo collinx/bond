@@ -1,0 +1,71 @@
+version: 2.1
+
+jobs:
+  clj-kondo:
+    docker:
+      - image: cljkondo/clj-kondo:2021.02.13
+    steps:
+      - checkout
+      - run: clj-kondo --lint .
+
+  test:
+    docker:
+      - image: clojure:lein-2.7.1
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - clj-jars-v2-{{ checksum "project.clj" }}
+            - clj-jars-v2-
+      - run:
+          name: Download dependencies
+          command: lein deps
+      - run:
+          name: Eastwood
+          command: lein eastwood
+      - run:
+          name: Run the tests
+          command: lein test-ci
+      - run:
+          name: Code Coverage
+          command: lein cloverage
+      - save_cache:
+          key: clj-jars-v2-{{ checksum "project.clj" }}
+          paths:
+            - ~/.m2
+      - store_artifacts:
+          path: target/coverage
+  publish:
+    docker:
+      - image: clojure:lein-2.7.1
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - clj-jars-v2-{{ checksum "project.clj" }}
+            - clj-jars-v2-
+      - run:
+          name: Download dependencies
+          command: lein deps
+      - run:
+          name: Publish to clojars
+          command: lein deploy
+
+workflows:
+  version: 2
+  test-and-publish:
+    jobs:
+      - clj-kondo
+      - test:
+          filters:
+            tags:
+              only: /.*/
+      - publish:
+          context: clojars-publish
+          requires:
+            - test
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
