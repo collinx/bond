@@ -1,4 +1,4 @@
-Bond [![CircleCI Status](https://circleci.com/gh/circleci/bond.png?style=badge)](https://circleci.com/gh/circleci/bond)
+Bond [![CircleCI Status](https://circleci.com/gh/helpshift/bond.png?style=badge)](https://circleci.com/gh/helpshift/bond)
 
 Bond is a spying and stubbing library, primarily intended for tests. This is a forked version from https://github.com/circleci/bond/ with support for per-thread stubbing and spying. The project version of this is "circle-ci-bond-base.forked-version". Based off of: https://github.com/circleci/bond/pull/47
 
